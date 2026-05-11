@@ -51,6 +51,7 @@ FONT_STYLES = {
 
 
 def load_font(kind: str, size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    """Load an Aleo font variant at the requested pixel size."""
     filename, weight = FONT_STYLES[kind]
     path = FONTS / filename
     if not path.exists():
@@ -66,22 +67,27 @@ def load_font(kind: str, size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageF
 
 
 def scale_value(value: int | float, scale: float) -> int:
+    """Scale a single numeric design coordinate from the base canvas."""
     return round(value * scale)
 
 
 def scale_point(point: tuple[int, int], scale: float) -> tuple[int, int]:
+    """Scale an ``(x, y)`` point from the base canvas."""
     return scale_value(point[0], scale), scale_value(point[1], scale)
 
 
 def scale_bounds(bounds: tuple[int, int, int, int], scale: float) -> tuple[int, int, int, int]:
+    """Scale a bounding box from the base canvas."""
     return tuple(scale_value(value, scale) for value in bounds)
 
 
 def scale_size(size: tuple[int, int], scale: float) -> tuple[int, int]:
+    """Scale a ``(width, height)`` size from the base canvas."""
     return scale_value(size[0], scale), scale_value(size[1], scale)
 
 
 def text_size(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont) -> tuple[int, int]:
+    """Return rendered text width and height for a Pillow font."""
     if not text:
         return 0, 0
     left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
@@ -96,6 +102,7 @@ def fit_font(
     max_width: int,
     min_size: int = 18,
 ) -> ImageFont.ImageFont:
+    """Reduce a font size until text fits within ``max_width``."""
     size = start_size
     while size > min_size:
         font = load_font(kind, size)
@@ -114,6 +121,7 @@ def draw_right_aligned_text(
     font: ImageFont.ImageFont,
     fill: str = WHITE,
 ) -> None:
+    """Draw one line of text with its right edge fixed at ``right_x``."""
     text_width, _ = text_size(draw, text, font)
     draw.text((right_x - text_width, y), text, font=font, fill=fill)
 
@@ -125,12 +133,14 @@ def draw_text_at_visible_top(
     font: ImageFont.ImageFont,
     fill: str = WHITE,
 ) -> None:
+    """Draw text so the visible ink begins at the requested top-left point."""
     left, top, _, _ = draw.textbbox((0, 0), text, font=font)
     x, y = xy
     draw.text((x - left, y - top), text, font=font, fill=fill)
 
 
 def trim_logo(image: Image.Image, threshold: int = 12) -> Image.Image:
+    """Crop transparent or near-black padding from an asset image."""
     rgba = image.convert("RGBA")
     alpha_box = rgba.getchannel("A").getbbox()
     if alpha_box and alpha_box != (0, 0, rgba.width, rgba.height):
@@ -155,6 +165,7 @@ def draw_centered_text(
     font: ImageFont.ImageFont,
     fill: str = WHITE,
 ) -> None:
+    """Draw one line of text centered in a fixed-width region."""
     text_width, _ = text_size(draw, text, font)
     draw.text((x + (width - text_width) / 2, y), text, font=font, fill=fill)
 
@@ -168,6 +179,7 @@ def draw_right_aligned_multiline(
     line_gap: int,
     fill: str = WHITE,
 ) -> None:
+    """Draw multiline text with all lines right-aligned to the same x position."""
     for line in str(text).splitlines():
         draw_right_aligned_text(draw, line, right_x, y, font, fill)
         _, height = text_size(draw, line, font)
@@ -175,6 +187,7 @@ def draw_right_aligned_multiline(
 
 
 def rgba(color: str, alpha: int) -> tuple[int, int, int, int]:
+    """Convert a hex color and alpha value to an RGBA tuple."""
     color = color.lstrip("#")
     return tuple(int(color[index : index + 2], 16) for index in (0, 2, 4)) + (alpha,)
 
@@ -184,6 +197,7 @@ def interpolate_rgba(
     right: tuple[int, int, int, int],
     amount: float,
 ) -> tuple[int, int, int, int]:
+    """Linearly interpolate between two RGBA colors."""
     return tuple(round(left[index] + (right[index] - left[index]) * amount) for index in range(4))
 
 
@@ -193,6 +207,7 @@ def draw_gradient_circle(
     left_rgba: tuple[int, int, int, int],
     right_rgba: tuple[int, int, int, int],
 ) -> None:
+    """Draw an ellipse mask filled with a horizontal RGBA gradient."""
     left, top, right, bottom = bounds
     width = right - left
     height = bottom - top
@@ -224,6 +239,7 @@ def draw_gradient_circle(
 
 
 def draw_background(canvas: Image.Image, scale: float) -> None:
+    """Draw the fixed circular gradient background."""
     draw = ImageDraw.Draw(canvas)
     transparent_black = (0, 0, 0, 0)
     gradient_blue = rgba(BLUE, 255)
@@ -244,6 +260,7 @@ def draw_background(canvas: Image.Image, scale: float) -> None:
 
 
 def center_crop_square(image: Image.Image) -> Image.Image:
+    """Center-crop an image to the largest possible square."""
     width, height = image.size
     side = min(width, height)
     left = (width - side) // 2
@@ -257,6 +274,7 @@ def paste_circle_photo(
     xy: tuple[int, int],
     size: int,
 ) -> None:
+    """Crop, resize, and paste a speaker photo through a circular mask."""
     photo = Image.open(photo_path).convert("RGB")
     photo = center_crop_square(photo).resize((size, size), Image.Resampling.LANCZOS)
 
@@ -272,6 +290,7 @@ def paste_logo(
     xy: tuple[int, int],
     max_size: tuple[int, int],
 ) -> None:
+    """Paste a trimmed logo into a bounded region while preserving aspect ratio."""
     if not logo_path.exists():
         return
     logo = trim_logo(Image.open(logo_path))
@@ -280,6 +299,7 @@ def paste_logo(
 
 
 def draw_footer(canvas: Image.Image, draw: ImageDraw.ImageDraw, row: pd.Series, scale: float) -> None:
+    """Draw the fixed event date and location footer."""
     date = str(row.get("date", DEFAULT_DATE))
     line_1 = str(row.get("location_line_1", DEFAULT_LOCATION_LINE_1))
     line_2 = str(row.get("location_line_2", DEFAULT_LOCATION_LINE_2))
@@ -311,6 +331,7 @@ def draw_post(
     assets_dir: Path,
     output_size: int = BASE_CANVAS_SIZE,
 ) -> Image.Image:
+    """Render one speaker poster from a CSV row."""
     scale = output_size / BASE_CANVAS_SIZE
     image = Image.new("RGBA", (output_size, output_size), BLACK)
     draw = ImageDraw.Draw(image)
@@ -408,6 +429,7 @@ def generate_posts(
     output_dir: Path,
     output_size: int = BASE_CANVAS_SIZE,
 ) -> None:
+    """Generate one PNG poster for every row with an available photo."""
     output_dir.mkdir(parents=True, exist_ok=True)
     df = pd.read_csv(csv_path, encoding="utf-8-sig").fillna("")
     df.columns = [column.strip().lstrip("\ufeff") for column in df.columns]
@@ -442,6 +464,7 @@ def generate_posts(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line options for batch poster generation."""
     parser = argparse.ArgumentParser(description="Generate SVMF LinkedIn speaker posts.")
     parser.add_argument("--csv", type=Path, default=DATA, help="Path to speakers CSV.")
     parser.add_argument("--photos", type=Path, default=PHOTOS, help="Directory containing speaker photos.")

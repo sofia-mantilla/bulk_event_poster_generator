@@ -14,6 +14,10 @@ Created with OpenAI Codex.
 
 This repository generates consistent event speaker posters from a CSV and a folder of photos. It was built for Silicon Valley Minerals Forum-style social posts, but the structure can be adapted for event flyers, speaker cards, and other recurring event materials.
 
+## Example Output
+
+![Example speaker poster for Jef Caers](examples/jef_caers.png)
+
 ## Module Core Functionality
 
 - Load speaker metadata from CSV.
@@ -108,6 +112,7 @@ to create the sample poster.
 .
 ├── assets/              # Fixed design assets and fonts
 ├── data/                # Public sample CSV
+├── examples/            # Tracked demo output
 ├── photos/              # Public sample photo
 ├── generate_posts.py    # Batch rendering script
 ├── requirements.txt     # Python dependencies

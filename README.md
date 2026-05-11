@@ -21,9 +21,6 @@ This repository generates consistent event speaker posters from a CSV and a fold
 - Render a fixed poster design with logos, typography, circular masks, and gradient backgrounds.
 - Export one PNG per speaker at configurable resolution.
 
-## Real Problem
-
-Event teams often need many visually consistent speaker graphics; this tool turns a content spreadsheet and photos into repeatable, on-brand outputs.
 
 ## Keywords
 

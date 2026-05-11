@@ -2,6 +2,8 @@
 
 Python generator for consistent speaker posters and related event social assets. The repo is data-driven: edit the CSV, add photos, rerun the script, and get matching PNG outputs.
 
+Created with OpenAI Codex.
+
 ## Quick Start
 
 ```bash
@@ -53,3 +55,7 @@ output/      Generated PNG files, ignored by git
 ```
 
 Private speaker lists, extra photos, spreadsheets, and generated outputs are intentionally ignored by `.gitignore`.
+
+## License
+
+This project is released under the [MIT License](LICENSE).
